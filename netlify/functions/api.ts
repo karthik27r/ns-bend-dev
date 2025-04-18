@@ -5,4 +5,14 @@ import serverless from 'serverless-http';
 import app from '../../dist/server'; // Adjust this path if your structure is different
 
 // Wrap the Express app with serverless-http
-export const handler = serverless(app);
+export const handler = serverless(app, {
+    request: (req, event) => {
+        if (event.body) {
+            try {
+                req.body = JSON.parse(event.body)
+            } catch {
+                //leave as-is
+            }
+        }
+    },
+})
