@@ -1,0 +1,11 @@
+# Netlify Build Settings (matches your UI settings)
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Rewrite rule for API requests
+[[redirects]]
+  from = "/api/*"  # Match any request starting with /api/
+  to = "/.netlify/functions/api/:splat" # Route it internally to the 'api' function
+  status = 200 # Required for a rewrite (not a redirect)
