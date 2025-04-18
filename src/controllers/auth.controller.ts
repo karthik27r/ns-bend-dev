@@ -74,6 +74,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
 // --- Login Controller ---
 export const login = async (req: Request, res: Response): Promise<Response> => {
+  console.log('Login request body:', JSON.stringify(req.body, null, 2));
   const { email, password } = req.body;
 
   if (!email || !password) {
