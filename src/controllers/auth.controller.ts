@@ -21,7 +21,7 @@ const generateToken = (userId: string): string => {
 
 // --- Registration Controller ---
 export const register = async (req: Request, res: Response): Promise<Response> => {
-  const { email, password, firstName, lastName, dateOfBirth, address } = req.body;
+  const { email, password, firstName, lastName, phoneNumber, dateOfBirth, address } = req.body;
 
   // Basic validation
   if (!email || !password || !firstName || !lastName) {
@@ -39,6 +39,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
       password,
       firstName,
       lastName,
+      phoneNumber,
       dateOfBirth, 
       address,   
       // creditScore and creditHistory will use defaults from the model
@@ -56,6 +57,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
       email: savedUser.email,
       firstName: savedUser.firstName,
       lastName: savedUser.lastName,
+      phoneNumber: savedUser.phoneNumber,
       // include other fields as needed, but NOT the password
     };
 
@@ -99,6 +101,8 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
       _id: user._id,
       email: user.email,
       firstName: user.firstName,
+      lastName: user.lastName,
+      phoneNumber: user.phoneNumber,
     };
 
     return res.status(200).json({ token, user: userResponse });

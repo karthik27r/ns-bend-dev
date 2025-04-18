@@ -37,6 +37,7 @@ export interface IUser extends Document {
   password?: string; // Make password optional on the interface after hashing
   firstName: string;
   lastName: string;
+  phoneNumber?: string;
   dateOfBirth?: Date;
   address?: IAddress;
   creditScore: number;
@@ -52,6 +53,16 @@ const UserSchema: Schema<IUser> = new Schema({
   password: { type: String, required: true, select: false }, // select: false prevents password from being returned by default
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
+  phoneNumber: { 
+    type: String, 
+    trim: true,
+    validate: {
+      validator: function(v: string) {
+        return /^\+?[0-9]{10,15}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
   dateOfBirth: { type: Date },
   address: AddressSchema,
   creditScore: { type: Number, default: 300 }, // Default starting score
