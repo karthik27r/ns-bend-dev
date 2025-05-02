@@ -28,7 +28,17 @@ export const getRecommendedOffers = async (req: Request, res: Response, next: Ne
 
     const userCreditScore = req.user.creditScore;
 
+    // Check if the user has a credit score yet
+    if (userCreditScore === undefined || userCreditScore === null) {
+        // If no score, return empty array or a specific message
+        // Returning empty array is often cleaner for the frontend
+        return res.status(200).json([]);
+        // Alternatively, send a message:
+        // return res.status(400).json({ message: 'Please fetch your credit score first.' });
+    }
+
     try {
+        // Score exists, proceed to fetch recommendations
         const recommendedOffers = await OfferService.findRecommendedOffers(userCreditScore);
         return res.status(200).json(recommendedOffers);
     } catch (error) {

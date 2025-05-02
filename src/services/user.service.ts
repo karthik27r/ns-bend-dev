@@ -42,16 +42,18 @@ class UserService {
                 throw new AppError('User not found for score update.', 404);
             }
 
-            // Simulation logic (as was in the controller)
-            const scoreChange = Math.floor(Math.random() * 51) - 25; // Random change between -25 and +25
-            const currentScore = user.creditScore || 300; // Use default if somehow missing
-            const newScore = Math.max(300, Math.min(850, currentScore + scoreChange)); // Clamp score
+            // Simulation logic: Generate a random score directly between 300 and 850
+            const newScore = Math.floor(Math.random() * (850 - 300 + 1)) + 300;
 
-            // Create history entry
+            const scoreChange = user.creditScore ? newScore - user.creditScore : null;
+            const note = scoreChange !== null
+                ? `Simulated score update. Change: ${scoreChange >= 0 ? '+' : ''}${scoreChange}`
+                : 'Simulated initial score fetch.';
+
             const historyEntry: ICreditHistory = {
                 _id: new mongoose.Types.ObjectId(), // Generate ID for subdocument if needed
                 score: newScore,
-                note: `Simulated score update. Change: ${scoreChange > 0 ? '+' : ''}${scoreChange}`,
+                note: note,
                 date: new Date()
             } as ICreditHistory; // Cast needed as _id isn't strictly required by interface
 
@@ -80,14 +82,11 @@ class UserService {
                 throw error;
             }
             if (error instanceof mongoose.Error.ValidationError) {
-                 throw new AppError(`Validation failed during score update: ${error.message}`, 400);
+                throw new AppError(`Validation failed during score update: ${error.message}`, 400);
             }
             throw new AppError('Server error during simulated score update.', 500);
         }
     }
-
-    // Add other user service methods here (e.g., updateUserProfile)
-    // async updateUserProfile(userId: string | mongoose.Types.ObjectId, updateData: UserUpdateData): Promise<IUser> { ... }
 }
 
 export default new UserService();

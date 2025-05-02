@@ -33,7 +33,7 @@ export const simulateScoreUpdate = async (req: Request, res: Response, next: Nex
     try {
         // Call the service method to handle the simulation and update
         const updatedUser = await UserService.simulateAndUpdateScore(userId);
-
+        console.log('Simulated score updated successfully:', updatedUser);
         return res.status(200).json({ message: 'Simulated score updated successfully.', user: updatedUser });
 
     } catch (error) {

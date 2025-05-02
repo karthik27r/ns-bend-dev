@@ -65,7 +65,7 @@ const UserSchema: Schema<IUser> = new Schema({
   },
   dateOfBirth: { type: Date },
   address: AddressSchema,
-  creditScore: { type: Number, default: 300 }, // Default starting score
+  creditScore: { type: Number }, // Removed default score
   creditHistory: [CreditHistorySchema],
 }, {
   timestamps: true // Automatically adds createdAt and updatedAt fields
