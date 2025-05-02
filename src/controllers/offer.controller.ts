@@ -1,53 +1,39 @@
-import { Request, Response } from 'express';
-import CreditCardOfferModel, { ICreditCardOffer } from '../models/CreditCardOffer.model';
-import UserModel from '../models/User.model'; // Needed for recommended offers
+import { Request, Response, NextFunction } from 'express'; // Added NextFunction
+import OfferService from '../services/offer.service'; // Import the service
+import { AppError } from '../utils/AppError'; // Import AppError for type checking
 
 // @desc    Get all credit card offers
 // @route   GET /api/offers
-// @access  Public (or Private, depending on requirements)
-export const getAllOffers = async (req: Request, res: Response): Promise<Response> => {
+// @access  Public
+export const getAllOffers = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => { // Added next
     try {
-        const offers = await CreditCardOfferModel.find().sort({ issuer: 1, cardName: 1 });
+        const offers = await OfferService.findAllOffers();
         return res.status(200).json(offers);
     } catch (error) {
-        console.error('Error fetching all offers:', error);
-        if (error instanceof Error) {
-            return res.status(500).json({ message: 'Server error fetching offers.', error: error.message });
-        }
-        return res.status(500).json({ message: 'An unknown server error occurred.' });
+        // Delegate error handling to the global error handler
+        // Ensure the error is passed to next()
+        next(error instanceof AppError ? error : new AppError('Failed to retrieve offers.', 500));
     }
 };
 
 // @desc    Get recommended credit card offers for the logged-in user
 // @route   GET /api/offers/recommended
 // @access  Private
-export const getRecommendedOffers = async (req: Request, res: Response): Promise<Response> => {
+export const getRecommendedOffers = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => { // Added next
     if (!req.user) {
-        // Should be caught by 'protect' middleware, but good practice to check
-        return res.status(401).json({ message: 'Not authorized.' });
+        // This check is technically redundant if 'protect' middleware is effective,
+        // but kept for clarity. The middleware should handle unauthorized access.
+        return next(new AppError('Not authorized.', 401)); // Use next for consistency
     }
 
     const userCreditScore = req.user.creditScore;
 
     try {
-        // Find offers where the user's score meets the minimum requirement
-        // and is below the maximum (if specified)
-        const recommendedOffers = await CreditCardOfferModel.find({
-            minCreditScore: { $lte: userCreditScore }, // User score >= min required
-            $or: [
-                { maxCreditScore: { $exists: false } }, // No max score defined
-                { maxCreditScore: { $gte: userCreditScore } } // User score <= max required
-            ]
-        }).sort({ minCreditScore: -1, cardName: 1 }); // Sort by score requirement, then name
-
+        const recommendedOffers = await OfferService.findRecommendedOffers(userCreditScore);
         return res.status(200).json(recommendedOffers);
-
     } catch (error) {
-        console.error('Error fetching recommended offers:', error);
-        if (error instanceof Error) {
-            return res.status(500).json({ message: 'Server error fetching recommended offers.', error: error.message });
-        }
-        return res.status(500).json({ message: 'An unknown server error occurred.' });
+        // Delegate error handling
+        next(error instanceof AppError ? error : new AppError('Failed to retrieve recommended offers.', 500));
     }
 };
 
